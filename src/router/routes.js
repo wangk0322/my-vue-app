@@ -19,6 +19,12 @@ const routes = [{
       name: 'printEffect',
       title: '打印效果',
       component: () => import('@/components/printEffect.vue'),
+    },
+    {
+      path: '/cyclicRolling',
+      name: 'cyclicRolling',
+      title: '循环滚动',
+      component: () => import('@/components/cyclicRolling.vue'),
     }]
 
   }

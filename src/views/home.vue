@@ -5,7 +5,8 @@
   import {
     reactive,
     ref,
-    watch
+    watch,
+    onMounted
   } from 'vue'
   import {
     useRouter
@@ -16,18 +17,29 @@
     icon: "SetUp",
     routePath: "",
     menuChildren: [{
-      id: "1-1",
-      menuLabel: "打印效果",
-      icon: "Tickets",
-      routePath: "/printEffect",
-    }]
+        id: "1-1",
+        menuLabel: "打印效果",
+        icon: "Tickets",
+        routePath: "/printEffect",
+      },
+      {
+        id: "1-2",
+        menuLabel: "循环滚动",
+        icon: "Tickets",
+        routePath: "/cyclicRolling",
+      }
+    ]
   }, ])
 
   const isCollapse = ref(false);
-  let router = useRouter()
+  const currentMenu = ref("首页");
+  const menuRef = ref(null);
+  const activeIndex = ref("")
+  let router = useRouter();
+
   const handleMenuClick = (item) => {
-    console.log("🚀 ~ handleMenuClick ~ item:", item)
-    router.push(item.routePath)
+    currentMenu.value = item.menuLabel
+    // router.push(item.routePath)
     // console.log(item);
   }
   // watch(() => router.currentRoute.value.path, (newValue, oldValue) => {
@@ -37,8 +49,9 @@
   //   immediate: true
   // })
   const handleBack = () => {
-  console.log("🚀 ~ handleBack ~ item:")
-
+    currentMenu.value = '首页';
+    router.push("/home");
+    activeIndex.value = '-1'
   }
 </script>
 
@@ -48,7 +61,7 @@
       <h1 v-show="!isCollapse">某某项目管理平台</h1>
       <el-scrollbar class="scrollbar-box" :style="{marginTop:isCollapse ? '50px':''}">
         <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
-          text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false">
+          text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false" router ref="menuRef" :default-active='activeIndex'>
           <el-sub-menu :index="item.routePath" v-for="item in menuList" :key="item.id">
             <template #title>
               <el-icon size='24px'>
@@ -80,18 +93,18 @@
     </el-aside>
     <el-container>
       <el-header>
-        <el-page-header :icon="router.currentRoute.value.path !='/home' ? null:''" @back='handleBack'>
-          <template #title >
+        <el-page-header :icon="router.currentRoute.value.path =='/home' ? null:'Back'" @back='handleBack'>
+          <template #title>
             <span v-if="router.currentRoute.value.path =='/home'">欢迎页</span>
             <span v-else>返回</span>
           </template>
           <template #content>
-            <span> 首页 </span>
+            <span> {{currentMenu}} </span>
           </template>
         </el-page-header>
       </el-header>
       <el-main>
-        <div class="welcome-page"  v-if="router.currentRoute.value.path =='/home'">欢迎你！</div>
+        <div class="welcome-page" v-if="router.currentRoute.value.path =='/home'">欢迎你！</div>
         <router-view v-else></router-view>
       </el-main>
     </el-container>
