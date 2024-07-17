@@ -14,7 +14,9 @@
   const setItem = (key, value) => {
     localStorage.setItem(key, value)
   }
-  setItem('userInfo', '[]')
+  if(!localStorage.getItem('userInfo')){
+    setItem('userInfo', '[]')
+  }
   const loginForm = reactive({
     userName: '',
     password: ''
@@ -61,6 +63,7 @@
             loginForm.password)
           if (isExit) {
             ElMessage.success("登录成功！")
+            setItem('currentUserInfo', JSON.stringify(loginForm))
             route.push('/home')
           } else {
             ElMessage.error("用户名或密码错误，请重新输入！")
@@ -85,6 +88,7 @@
           if (isExit) {
             ElMessage.error("用户名已存在，请重新输入！")
           } else {
+            newForm['createdId'] = Math.floor(new Date().getTime() / 1000);
             userInfoArr.push(newForm)
             localStorage.setItem('userInfo', JSON.stringify(userInfoArr))
             ElMessage.success("注册成功！")

@@ -1,12 +1,14 @@
 <script setup>
   import {
-    roleTypes
+    ElMessage, tourContentProps
   } from 'element-plus';
   import {
     reactive,
     ref,
     watch,
-    onMounted
+    computed,
+    onMounted,
+    nextTick
   } from 'vue'
   import {
     useRouter
@@ -31,35 +33,104 @@
       }
     ]
   }, ])
-
+  const currentUserInfo = JSON.parse(localStorage.getItem('currentUserInfo'))
   const isCollapse = ref(false);
+  const editDialogVisible = ref(false);
+  const open = ref(false);
   const currentMenu = ref("首页");
   const menuRef = ref(null);
+  // const iconRef = ref(null);
+  // const backRef = ref(null);
+  // const userInfoRef = ref(null);
+
   const activeIndex = ref("")
+  const pwdForm = reactive({
+    oldPassword: '',
+    newPassword: ''
+
+  })
+  const pwdFormRules = {
+    oldPassword: [{
+      required: true,
+      message: '请输入原密码',
+      trigger: ['blur', 'change']
+    }],
+    newPassword: [{
+      required: true,
+      message: '请输入新密码',
+      trigger: ['blur', 'change']
+    }]
+  }
   let router = useRouter();
 
   const handleMenuClick = (item) => {
     currentMenu.value = item.menuLabel
-    // router.push(item.routePath)
-    // console.log(item);
   }
-  // watch(() => router.currentRoute.value.path, (newValue, oldValue) => {
-  //   console.log("🚀 ~ watch ~ newValue,oldValue:", newValue, oldValue)
+  onMounted(() => {
+    nextTick(() => {
+     setTimeout(() => {
+       open.value = true
+     },400)
+    })
+  })
 
-  // }, {
-  //   immediate: true
-  // })
   const handleBack = () => {
     currentMenu.value = '首页';
     router.push("/home");
     activeIndex.value = '-1'
   }
+  const getToDay = computed(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
+    const day = now.getDate();
+    return `${year}.${month.toString().padStart(2, '0')}.${day.toString().padStart(2, '0')}`
+  })
+  const handleCommand = (item) => {
+    if (item == 'switchUser') {
+      router.push("/login");
+    } else if (item == 'editPwd') {
+      editDialogVisible.value = true
+    } else if (item == 'exit') {
+      router.push("/login");
+      localStorage.clear()
+      sessionStorage.clear()
+    }
+  }
+  const pwdFormRef = ref(null);
+  const setNewPwd = () => {
+    pwdFormRef.value.validate((valid, fields) => {
+      if (valid) {
+        let userInfoArr = JSON.parse(localStorage.getItem('userInfo'));
+        let currentIndex = userInfoArr.findIndex(item => item.userName == currentUserInfo.userName);
+        if (pwdForm.oldPassword == pwdForm.newPassword) {
+          ElMessage.error("新密码与原密码一致，请重新输入！");
+          return
+        } else if (currentUserInfo.password != pwdForm.oldPassword) {
+          ElMessage.error("原密码错误，请重新输入！");
+          return
+        } else {
+          userInfoArr[currentIndex].password = pwdForm.newPassword
+          localStorage.setItem('userInfo', JSON.stringify(userInfoArr))
+          editDialogVisible.value = false
+          ElMessage.success("密码修改成功！请重新登录");
+          localStorage.setItem('currentUserInfo', '')
+          router.push("/login");
+        }
+      }
+
+    })
+  }
+  const resetForm = (formRef) => {
+    if (!formRef) return
+    formRef.resetFields()
+  }
 </script>
 
 <template>
   <el-container class="home-box">
-    <el-aside :width="!isCollapse? '300px' :'50px'">
-      <h1 v-show="!isCollapse">某某项目管理平台</h1>
+    <el-aside :width="!isCollapse? '300px' :'50px'" >
+      <h1 v-show="!isCollapse" >某某项目管理平台</h1>
       <el-scrollbar class="scrollbar-box" :style="{marginTop:isCollapse ? '50px':''}">
         <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
           text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false" router ref="menuRef"
@@ -86,46 +157,50 @@
 
         </el-menu>
       </el-scrollbar>
-      <el-icon v-if="!isCollapse" class="Collapse-box" size="20px" @click="isCollapse=true">
-        <Fold />
-      </el-icon>
-      <el-icon v-else class="Collapse-box" size="20px" @click="isCollapse=false">
-        <Expand />
-      </el-icon>
+      <div class="Collapse-box" id="iconRef">
+        <el-icon v-if="!isCollapse" size="20px" @click="isCollapse=true">
+          <Fold />
+        </el-icon>
+        <el-icon v-else size="20px" @click="isCollapse=false">
+          <Expand />
+        </el-icon>
+      </div>
     </el-aside>
     <el-container>
       <el-header>
         <el-page-header :icon="router.currentRoute.value.path =='/home' ? null:'Back'" @back='handleBack'>
           <template #title>
-            <span v-if="router.currentRoute.value.path =='/home'">欢迎页</span>
+            <span v-if="router.currentRoute.value.path =='/home'" id="backRef">欢迎页</span>
             <span v-else>返回</span>
           </template>
           <template #content>
             <span> {{currentMenu}} </span>
           </template>
         </el-page-header>
-        <el-dropdown trigger="click">
+        <el-dropdown trigger="click" @command="handleCommand" id="userInfoRef">
           <div class="userInfo-box">
             <el-avatar :size="50" :src="userImg" />
             <div class="userInfo-text">
-              <p>用户名</p>
-              <p>2024.07.17</p>
+              <p>{{currentUserInfo.userName}}</p>
+              <p>{{getToDay}}</p>
             </div>
           </div>
           <template #dropdown>
 
             <el-dropdown-menu>
-              <el-dropdown-item>
-                <el-icon size="18px"><User /></el-icon>
+              <el-dropdown-item command="switchUser">
+                <el-icon size="18px">
+                  <User />
+                </el-icon>
                 切换用户
               </el-dropdown-item>
-              <el-dropdown-item>
+              <el-dropdown-item command="editPwd">
                 <el-icon size="18px">
                   <Unlock />
                 </el-icon>
                 修改密码
               </el-dropdown-item>
-              <el-dropdown-item>
+              <el-dropdown-item command="exit">
                 <el-icon size="18px">
                   <SwitchButton />
                 </el-icon>
@@ -141,6 +216,34 @@
         <router-view v-else></router-view>
       </el-main>
     </el-container>
+    <el-dialog v-model="editDialogVisible" title="修改密码" :append-to-body="true" width="500" align-center
+      @close='resetForm(pwdFormRef)'>
+      <el-form ref="pwdFormRef" :model="pwdForm" :rules="pwdFormRules" status-icon label-width="120px">
+        <el-form-item label="原密码" prop="oldPassword">
+          <el-input v-model="pwdForm.oldPassword" type="password" placeholder="请输入原密码" show-password />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input v-model="pwdForm.newPassword" type="password" placeholder="请输入新密码" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="setNewPwd" type="primary">确定</el-button>
+          <el-button type="warning" @click="editDialogVisible = false">
+            取消
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
+    <el-config-provider :locale="zhCn">
+      <el-tour v-model="open">
+      <el-tour-step target="#iconRef" title="收缩按钮" description="点击此处收起菜单" >
+      </el-tour-step>
+      <el-tour-step target="#backRef" title="返回" description="点击此处返回首页" />
+      <el-tour-step target="#userInfoRef" title="信息设置" description="点击此处可以进行退出等操作" />
+    </el-tour>
+    </el-config-provider>
+    
   </el-container>
 </template>
 
@@ -249,6 +352,10 @@
         justify-content: center;
         cursor: pointer;
 
+        .el-avatar:hover {
+          animation: rotation 1.5s linear infinite;
+        }
+
         .userInfo-text {
           color: #fff;
           margin-left: 10px;
@@ -276,6 +383,16 @@
         font-weight: bold;
         color: #427ebc;
       }
+    }
+  }
+
+  @keyframes rotation {
+    from {
+      transform: rotate(0deg);
+    }
+
+    to {
+      transform: rotate(360deg);
     }
   }
 </style>
