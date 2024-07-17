@@ -11,6 +11,7 @@
   import {
     useRouter
   } from 'vue-router';
+  import userImg from "../assets/images/cat.png"
   const menuList = reactive([{
     id: "1",
     menuLabel: "常用插架",
@@ -61,7 +62,8 @@
       <h1 v-show="!isCollapse">某某项目管理平台</h1>
       <el-scrollbar class="scrollbar-box" :style="{marginTop:isCollapse ? '50px':''}">
         <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
-          text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false" router ref="menuRef" :default-active='activeIndex'>
+          text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false" router ref="menuRef"
+          :default-active='activeIndex'>
           <el-sub-menu :index="item.routePath" v-for="item in menuList" :key="item.id">
             <template #title>
               <el-icon size='24px'>
@@ -102,6 +104,37 @@
             <span> {{currentMenu}} </span>
           </template>
         </el-page-header>
+        <el-dropdown trigger="click">
+          <div class="userInfo-box">
+            <el-avatar :size="50" :src="userImg" />
+            <div class="userInfo-text">
+              <p>用户名</p>
+              <p>2024.07.17</p>
+            </div>
+          </div>
+          <template #dropdown>
+
+            <el-dropdown-menu>
+              <el-dropdown-item>
+                <el-icon size="18px"><User /></el-icon>
+                切换用户
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <el-icon size="18px">
+                  <Unlock />
+                </el-icon>
+                修改密码
+              </el-dropdown-item>
+              <el-dropdown-item>
+                <el-icon size="18px">
+                  <SwitchButton />
+                </el-icon>
+                退出
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+
       </el-header>
       <el-main>
         <div class="welcome-page" v-if="router.currentRoute.value.path =='/home'">欢迎你！</div>
@@ -200,6 +233,31 @@
       background-color: #427ebc;
       display: flex;
       align-items: center;
+      position: relative;
+
+      .el-dropdown {
+        height: 100%;
+        position: absolute;
+        top: 0px;
+        right: 10px;
+      }
+
+      .userInfo-box {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+
+        .userInfo-text {
+          color: #fff;
+          margin-left: 10px;
+
+          p {
+            line-height: 24px;
+          }
+        }
+      }
 
     }
 

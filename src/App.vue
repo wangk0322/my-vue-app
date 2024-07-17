@@ -5,9 +5,9 @@
 <template>
   <router-view v-slot="{ Component  }">
     <transition name="fade" mode="out-in" appear>
-      <keep-alive>
+      <!-- <keep-alive> -->
         <component :is="Component" />
-      </keep-alive>
+      <!-- </keep-alive> -->
     </transition>
   </router-view>
 </template>
@@ -38,7 +38,7 @@
 
   .fade-leave-active,
   .fade-enter-active {
-    transition: all 0.5s ease-out;
+    transition: all 0.3s ease-out;
   }
 
   .fade-leave-from {
