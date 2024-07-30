@@ -15,7 +15,6 @@
 
   onMounted(() => {
     const ele = document.getElementById("printEffect-box")
-    console.log("🚀 ~ printEffectBox:", ele)
     type(ele, startArticle, 5000, endArticle);
   })
   const openGitHub = () => {

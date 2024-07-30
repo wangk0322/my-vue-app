@@ -1,6 +1,7 @@
 <script setup>
   import {
-    ElMessage, tourContentProps
+    ElMessage,
+    tourContentProps
   } from 'element-plus';
   import {
     reactive,
@@ -30,9 +31,33 @@
         menuLabel: "循环滚动",
         icon: "Tickets",
         routePath: "/cyclicRolling",
+      },
+      {
+        id: "1-3",
+        menuLabel: "电子签名",
+        icon: "Tickets",
+        routePath: "/electronicSignature",
       }
     ]
-  }, ])
+  },{
+    id: "2",
+    menuLabel: "常用组件",
+    icon: "Postcard",
+    routePath: "",
+    menuChildren: [{
+        id: "2-1",
+        menuLabel: "获取验证码",
+        icon: "Tickets",
+        routePath: "/getVerificationCode",
+      },
+      {
+        id: "2-2",
+        menuLabel: "分享屏幕",
+        icon: "Tickets",
+        routePath: "/shareScreen",
+      },
+    ]
+  } ])
   const currentUserInfo = JSON.parse(localStorage.getItem('currentUserInfo'))
   const isCollapse = ref(false);
   const editDialogVisible = ref(false);
@@ -68,10 +93,14 @@
   }
   onMounted(() => {
     nextTick(() => {
-     setTimeout(() => {
-       open.value = true
-     },400)
+      setTimeout(() => {
+        open.value = true
+      }, 400)
     })
+    if(window.performance.navigation.type == 1){
+       router.push("/home");
+        currentMenu.value = '首页';
+    }
   })
 
   const handleBack = () => {
@@ -129,13 +158,13 @@
 
 <template>
   <el-container class="home-box">
-    <el-aside :width="!isCollapse? '300px' :'50px'" >
-      <h1 v-show="!isCollapse" >某某项目管理平台</h1>
+    <el-aside :width="!isCollapse? '300px' :'50px'">
+      <h1 v-show="!isCollapse">某某项目管理平台</h1>
       <el-scrollbar class="scrollbar-box" :style="{marginTop:isCollapse ? '50px':''}">
         <el-menu active-text-color="#ffd04b" background-color="#545c64" class="el-menu-vertical-demo"
           text-color="#1d2129" :collapse="isCollapse" :collapse-transition="false" router ref="menuRef"
           :default-active='activeIndex'>
-          <el-sub-menu :index="item.routePath" v-for="item in menuList" :key="item.id">
+          <el-sub-menu :index="item.id" v-for="item in menuList" :key="item.id">
             <template #title>
               <el-icon size='24px'>
                 <component :is="item.icon"></component>
@@ -237,13 +266,13 @@
     </el-dialog>
     <el-config-provider :locale="zhCn">
       <el-tour v-model="open">
-      <el-tour-step target="#iconRef" title="收缩按钮" description="点击此处收起菜单" >
-      </el-tour-step>
-      <el-tour-step target="#backRef" title="返回" description="点击此处返回首页" />
-      <el-tour-step target="#userInfoRef" title="信息设置" description="点击此处可以进行退出等操作" />
-    </el-tour>
+        <el-tour-step target="#iconRef" title="收缩按钮" description="点击此处收起菜单">
+        </el-tour-step>
+        <el-tour-step target="#backRef" title="返回" description="点击此处返回首页" />
+        <el-tour-step target="#userInfoRef" title="信息设置" description="点击此处可以进行退出等操作" />
+      </el-tour>
     </el-config-provider>
-    
+
   </el-container>
 </template>
 
@@ -353,7 +382,11 @@
         cursor: pointer;
 
         .el-avatar:hover {
-          animation: rotation 1.5s linear infinite;
+          transform: rotate(666turn);
+          transition-delay: 1s;
+          transition-property: all;
+          transition-duration: 59s;
+          transition-timing-function: cubic-bezier(.34, 0, .84, 1);
         }
 
         .userInfo-text {
@@ -386,13 +419,13 @@
     }
   }
 
-  @keyframes rotation {
-    from {
-      transform: rotate(0deg);
-    }
+  // @keyframes rotation {
+  //   from {
+  //     transform: rotate(0deg);
+  //   }
 
-    to {
-      transform: rotate(360deg);
-    }
-  }
+  //   to {
+  //     transform: rotate(360deg);
+  //   }
+  // }
 </style>
